@@ -34,7 +34,7 @@ namespace ClosestFractionEstimator
 
                 while (!ExactMatch)
                 {
-                    Next = FareySequencer.NextFraction(Lower, Upper);
+                    Next = FareySequencer.NextFractionEuclidian(Lower, Upper);
                     if (Next.DoubleRepresentation == value)
                     {
 
@@ -62,14 +62,20 @@ namespace ClosestFractionEstimator
 
     class FareySequencer
     {
-        public static Fraction NextFraction (Fraction LowerFraction, Fraction upperFraction)
+        /// <summary>
+        /// Uses the Euclidian GCD Algorithm (which is slow)
+        /// </summary>
+        /// <param name="LowerFraction"></param>
+        /// <param name="upperFraction"></param>
+        /// <returns></returns>
+        public static Fraction NextFractionEuclidian (Fraction LowerFraction, Fraction upperFraction)
         {
-            int newNumerator = LowerFraction.Numerator + upperFraction.Numerator;
-            int newDenominator = LowerFraction.Denominator + upperFraction.Denominator;
+            uint newNumerator = LowerFraction.Numerator + upperFraction.Numerator;
+            uint newDenominator = LowerFraction.Denominator + upperFraction.Denominator;
 
-            int GCD = newNumerator;
-            int i = newDenominator;
-            int oldI;
+            uint GCD = newNumerator;
+            uint i = newDenominator;
+            uint oldI;
             while (i != 0)
             {
                 oldI = i;
@@ -79,17 +85,61 @@ namespace ClosestFractionEstimator
 
             return new Fraction(newNumerator / GCD, newDenominator / GCD);
         }
+        /// <summary>
+        /// uses the faster Binary GCD Algorithm (Faster)
+        /// </summary>
+        /// <param name="LowerFraction"></param>
+        /// <param name="upperFraction"></param>
+        /// <returns></returns>
+        public static Fraction NextFractionBinaryGCD(Fraction LowerFraction, Fraction upperFraction)
+        {
+            uint newNumerator = LowerFraction.Numerator + upperFraction.Numerator;
+            uint newDenominator = LowerFraction.Denominator + upperFraction.Denominator;
+
+            uint GCD = BinaryGCD(newNumerator, newDenominator);
+            return new Fraction(newNumerator / GCD, newDenominator / GCD);
+        }
+
+        private static uint BinaryGCD(uint u, uint v)
+        {
+            if (u == v || v == 0) return u;
+            if (u == 0) return v;
+
+            if ((u & 1) == 1) //u is odd
+            {
+                if ((v & 1) == 0) //v is even
+                {
+                    return BinaryGCD(u, v >> 1);
+                }
+                if (u > v) //both u and v are odd
+                {
+                    return BinaryGCD((u - v) >> 1, v);
+                }else
+                {
+                    return BinaryGCD((v - u) >> 1, u);
+                }
+            } else
+            {
+                if ((v & 1) == 0) //v is even, u is even
+                {
+                    return 2 * BinaryGCD(u >> 1, v >> 1);
+                } else //v is odd, u is even
+                {
+                    return BinaryGCD(u >> 1, v);
+                }
+            }
+        }
     }
 
     struct Fraction
     {
-        public int Numerator;
-        public int Denominator;
+        public uint Numerator;
+        public uint Denominator;
 
         private double fNumerator;
         private double fDenominator;
 
-        public Fraction(int numerator, int denominator)
+        public Fraction(uint numerator, uint denominator)
         {
             Numerator = numerator;
             Denominator = denominator;

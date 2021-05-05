@@ -13,48 +13,49 @@ namespace ClosestFractionEstimator
         {
             double value;
 
-            Console.WriteLine("Enter desired number less than 1, or pi / e for those irrationals. I'll run for 10s or until I find the exact value");
+            Console.WriteLine("Enter desired number less than 1, or pi / e for those irrationals.");
             var input = Console.ReadLine();
 
             if (input == "pi") value = Math.PI-3;
             else if (input == "e") value = Math.E-2;
             else value = double.Parse(input);
 
-            Fraction Upper = new Fraction(1, 1);
-            Fraction Lower = new Fraction(0, 1);
-            Fraction Next;
-            bool ExistingIsUpper;
-            bool ExactMatch = false;
+            Fraction Next = new Fraction();
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            while (stopwatch.ElapsedMilliseconds < 10000 && !ExactMatch)
+            int i = 0;
+            while (i<1000)
             {
-                ExistingIsUpper = false;
-                Next = FareySequencer.NextFraction(Lower, Upper);
-                if (Next.DoubleRepresentation == value)
+                Fraction Upper = new Fraction(1, 1);
+                Fraction Lower = new Fraction(0, 1);
+                
+                bool ExactMatch = false;
+
+                while (!ExactMatch)
                 {
-                    Console.WriteLine(Next.StringRepresentation);
-                    Console.WriteLine("Exact Match");
-                    ExactMatch = !ExactMatch;
-                }else if (Next.DoubleRepresentation > value)
-                {
-                    Upper = Next;
-                } else
-                {
-                    Lower = Next;
-                    ExistingIsUpper = true;
+                    Next = FareySequencer.NextFraction(Lower, Upper);
+                    if (Next.DoubleRepresentation == value)
+                    {
+
+                        ExactMatch = !ExactMatch;
+                    }
+                    else if (Next.DoubleRepresentation > value)
+                    {
+                        Upper = Next;
+                    }
+                    else
+                    {
+                        Lower = Next;
+                    }
                 }
-                if (ExistingIsUpper)
-                {
-                    if ((Upper.DoubleRepresentation - value) > (value - Lower.DoubleRepresentation)) Console.WriteLine(Lower.StringRepresentation);
-                } else
-                {
-                    if ((Upper.DoubleRepresentation - value) < (value - Lower.DoubleRepresentation)) Console.WriteLine(Upper.StringRepresentation);
-                }
+                i++;
             }
-            Console.WriteLine("done");
+            stopwatch.Stop();
+            Console.WriteLine(Next.StringRepresentation);
+            Console.WriteLine($"Completed in {stopwatch.ElapsedMilliseconds} milliseconds");
             Console.Read();
+
         }
     }
 
